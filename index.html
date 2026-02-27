@@ -14,15 +14,31 @@ body{
 }
 
 .header{
-  padding:20px;
-  font-size:28px;
+  padding:18px;
+  font-size:26px;
   font-weight:700;
   background:linear-gradient(90deg,#ff003c,#ff8c00);
   text-align:center;
 }
 
+.nav{
+  display:flex;
+  justify-content:space-around;
+  background:#111;
+  padding:10px 0;
+}
+
+.nav button{
+  background:none;
+  border:none;
+  color:white;
+  font-weight:600;
+  font-size:16px;
+  cursor:pointer;
+}
+
 .container{
-  padding:20px;
+  padding:18px;
   max-width:1100px;
   margin:auto;
 }
@@ -31,11 +47,11 @@ body{
   background:#15151c;
   padding:18px;
   border-radius:18px;
-  margin-bottom:18px;
-  box-shadow:0 0 25px rgba(255,0,60,.15);
+  margin-bottom:16px;
+  box-shadow:0 0 20px rgba(255,0,60,.15);
 }
 
-input,select{
+input,select,textarea{
   width:100%;
   padding:12px;
   margin:6px 0;
@@ -45,43 +61,36 @@ input,select{
   color:white;
 }
 
-button{
+button.primary{
   background:linear-gradient(90deg,#ff003c,#ff8c00);
   border:none;
-  padding:12px 16px;
+  padding:12px;
   border-radius:12px;
   font-weight:700;
   cursor:pointer;
-  margin-top:8px;
 }
 
 .profile{
   display:flex;
-  gap:15px;
+  gap:12px;
   align-items:center;
-  margin-bottom:10px;
+  background:#0b0b0f;
+  padding:10px;
+  border-radius:12px;
+  margin-bottom:8px;
+  cursor:pointer;
 }
 
 .avatar{
-  width:70px;
-  height:70px;
+  width:60px;
+  height:60px;
   border-radius:50%;
   object-fit:cover;
   background:#222;
 }
 
-.fireworks{
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-}
-
-.goal{
-  background:#0b0b0f;
-  padding:10px;
-  border-radius:10px;
-  margin-top:6px;
-}
+.hidden{display:none;}
+.goal{background:#0b0b0f;padding:8px;border-radius:10px;margin-top:6px;}
 </style>
 </head>
 
@@ -89,24 +98,39 @@ button{
 
 <div class="header">🏃 TrackPro Athlete</div>
 
+<div class="nav hidden" id="nav">
+  <button onclick="showPage('profiles')">Profiles</button>
+  <button onclick="showPage('stats')">Stats</button>
+  <button onclick="showPage('workout')">Workout</button>
+  <button onclick="showPage('sync')">Sync</button>
+</div>
+
 <div class="container">
 
-<!-- PROFILE -->
+<!-- PROFILES PAGE -->
+<div id="profilesPage">
+
 <div class="card">
-<h2>Athlete Profile</h2>
+<h2>Athletes</h2>
 
 <input id="name" placeholder="Name">
 <input id="grade" placeholder="Grade">
 <input id="photo" type="file">
 
-<button onclick="saveProfile()">Save Profile</button>
+<button class="primary" onclick="addAthlete()">Add Athlete</button>
 
-<div id="profileView"></div>
+<div id="athleteList"></div>
 </div>
 
-<!-- TIMES -->
+</div>
+
+<!-- STATS PAGE -->
+<div id="statsPage" class="hidden">
+
+<button onclick="backToProfiles()">⬅ Back</button>
+
 <div class="card">
-<h2>Performance</h2>
+<h2 id="athleteTitle"></h2>
 
 <select id="event">
 <option>100m</option>
@@ -116,117 +140,145 @@ button{
 <option>1600m</option>
 </select>
 
-<input id="time" placeholder="Time (seconds)">
-<button onclick="addTime()">Add Result</button>
+<input id="time" placeholder="Time (sec)">
+<button class="primary" onclick="addTime()">Add Result</button>
 
 <canvas id="chart"></canvas>
 </div>
 
-<!-- AI PREDICTOR -->
 <div class="card">
-<h2>🏁 Race Prediction AI</h2>
-<input id="predInput" placeholder="Enter recent time">
-<button onclick="predict()">Predict Next PR</button>
+<h3>🏁 Race Prediction AI</h3>
+<input id="predInput" placeholder="Recent time">
+<button class="primary" onclick="predict()">Predict</button>
 <div id="prediction"></div>
 </div>
 
-<!-- SPLIT CALCULATOR -->
 <div class="card">
-<h2>⏱ Split Calculator</h2>
+<h3>⏱ Split Calculator</h3>
 <input id="splitTime" placeholder="Total time">
-<input id="splitDistance" placeholder="Distance (m)">
-<input id="splitSegment" placeholder="Segment (m)">
-<button onclick="calcSplit()">Calculate Split</button>
+<input id="splitDistance" placeholder="Distance">
+<input id="splitSegment" placeholder="Segment">
+<button class="primary" onclick="calcSplit()">Calculate</button>
 <div id="splitResult"></div>
 </div>
 
-<!-- GOALS -->
 <div class="card">
-<h2>🎯 Goals</h2>
-<input id="goalInput" placeholder="Enter goal">
-<button onclick="addGoal()">Add Goal</button>
+<h3>🎯 Goals</h3>
+<input id="goalInput" placeholder="Goal">
+<button class="primary" onclick="addGoal()">Add Goal</button>
 <div id="goals"></div>
 </div>
 
-<!-- WORKOUT -->
-<div class="card">
-<h2>🏃 Workout Planner</h2>
-<textarea id="workout" rows="4" style="width:100%;background:#0b0b0f;color:white;border:none;border-radius:10px;padding:10px;"></textarea>
-<button onclick="saveWorkout()">Save Workout</button>
 </div>
 
-<!-- SYNC -->
+<!-- WORKOUT PAGE -->
+<div id="workoutPage" class="hidden">
+
+<button onclick="backToProfiles()">⬅ Back</button>
+
+<div class="card">
+<h2>Workout Planner</h2>
+<textarea id="workout" rows="6"></textarea>
+<button class="primary" onclick="saveWorkout()">Save</button>
+</div>
+
+</div>
+
+<!-- SYNC PAGE -->
+<div id="syncPage" class="hidden">
+
+<button onclick="backToProfiles()">⬅ Back</button>
+
 <div class="card">
 <h2>☁️ Sync</h2>
-<button onclick="exportData()">Export Data</button>
+<button class="primary" onclick="exportData()">Export Data</button>
 <input type="file" onchange="importData(event)">
 </div>
 
 </div>
 
-<canvas class="fireworks" id="fx"></canvas>
+</div>
 
 <script>
-let data = JSON.parse(localStorage.getItem("trackPro")) || {
-  profile:{},
-  results:{},
-  goals:[],
-  workout:""
-};
+let data = JSON.parse(localStorage.getItem("trackPro2")) || {athletes:[]};
+let current = null;
 
-function saveAll(){
-  localStorage.setItem("trackPro",JSON.stringify(data));
-}
+function save(){localStorage.setItem("trackPro2",JSON.stringify(data));}
 
-function saveProfile(){
-  const file=document.getElementById("photo").files[0];
+function addAthlete(){
+  const file=photo.files[0];
+  const athlete={name:name.value,grade:grade.value,photo:"",results:{},goals:[],workout:""};
+  
   if(file){
-    const reader=new FileReader();
-    reader.onload=()=>{
-      data.profile.photo=reader.result;
-      finishProfile();
-    };
-    reader.readAsDataURL(file);
-  } else finishProfile();
+    const r=new FileReader();
+    r.onload=()=>{athlete.photo=r.result;finishAdd(athlete);}
+    r.readAsDataURL(file);
+  } else finishAdd(athlete);
 }
 
-function finishProfile(){
-  data.profile.name=name.value;
-  data.profile.grade=grade.value;
-  saveAll();
-  renderProfile();
+function finishAdd(a){
+  data.athletes.push(a);
+  save();
+  renderAthletes();
 }
 
-function renderProfile(){
-  if(!data.profile.name) return;
-  profileView.innerHTML=`
-    <div class="profile">
-      <img class="avatar" src="${data.profile.photo||''}">
-      <div>
-        <b>${data.profile.name}</b><br>
-        Grade ${data.profile.grade}
-      </div>
-    </div>
-  `;
+function renderAthletes(){
+  athleteList.innerHTML="";
+  data.athletes.forEach((a,i)=>{
+    athleteList.innerHTML+=`
+      <div class="profile" onclick="openAthlete(${i})">
+        <img class="avatar" src="${a.photo}">
+        <div>
+          <b>${a.name}</b><br>
+          Grade ${a.grade}
+        </div>
+      </div>`;
+  });
+}
+
+function openAthlete(i){
+  current=i;
+  athleteTitle.innerText=data.athletes[i].name;
+  document.getElementById("profilesPage").classList.add("hidden");
+  document.getElementById("nav").classList.remove("hidden");
+  showPage("stats");
+  updateChart();
+  renderGoals();
+}
+
+function backToProfiles(){
+  document.getElementById("profilesPage").classList.remove("hidden");
+  document.getElementById("nav").classList.add("hidden");
+  hideAll();
+}
+
+function showPage(p){
+  hideAll();
+  document.getElementById(p+"Page").classList.remove("hidden");
+}
+
+function hideAll(){
+  ["stats","workout","sync"].forEach(p=>{
+    document.getElementById(p+"Page").classList.add("hidden");
+  });
 }
 
 function addTime(){
   const e=event.value;
   const t=parseFloat(time.value);
-  if(!data.results[e]) data.results[e]=[];
-  const best=Math.min(...(data.results[e].length?data.results[e]:[9999]));
-  data.results[e].push(t);
-  saveAll();
+  const a=data.athletes[current];
+  if(!a.results[e]) a.results[e]=[];
+  a.results[e].push(t);
+  save();
   updateChart();
-
-  if(t<best) fireworks();
 }
 
 let chart;
 
 function updateChart(){
+  const a=data.athletes[current];
   const e=event.value;
-  const arr=data.results[e]||[];
+  const arr=a.results[e]||[];
   if(chart) chart.destroy();
   chart=new Chart(chart,{
     type:"line",
@@ -237,8 +289,7 @@ function updateChart(){
 
 function predict(){
   const t=parseFloat(predInput.value);
-  const predicted=(t*0.97).toFixed(2);
-  prediction.innerText="Predicted PR: "+predicted+" sec";
+  prediction.innerText="Predicted PR: "+(t*0.97).toFixed(2)+" sec";
 }
 
 function calcSplit(){
@@ -249,18 +300,20 @@ function calcSplit(){
 }
 
 function addGoal(){
-  data.goals.push(goalInput.value);
-  saveAll();
+  const a=data.athletes[current];
+  a.goals.push(goalInput.value);
+  save();
   renderGoals();
 }
 
 function renderGoals(){
-  goals.innerHTML=data.goals.map(g=>`<div class="goal">${g}</div>`).join("");
+  const a=data.athletes[current];
+  goals.innerHTML=(a.goals||[]).map(g=>`<div class="goal">${g}</div>`).join("");
 }
 
 function saveWorkout(){
-  data.workout=workout.value;
-  saveAll();
+  data.athletes[current].workout=workout.value;
+  save();
 }
 
 function exportData(){
@@ -272,51 +325,12 @@ function exportData(){
 }
 
 function importData(e){
-  const file=e.target.files[0];
-  const reader=new FileReader();
-  reader.onload=()=>{
-    data=JSON.parse(reader.result);
-    saveAll();
-    location.reload();
-  };
-  reader.readAsText(file);
+  const r=new FileReader();
+  r.onload=()=>{data=JSON.parse(r.result);save();location.reload();}
+  r.readAsText(e.target.files[0]);
 }
 
-function fireworks(){
-  const c=fx;
-  const ctx=c.getContext("2d");
-  c.width=innerWidth;
-  c.height=innerHeight;
-
-  let particles=[];
-  for(let i=0;i<150;i++){
-    particles.push({
-      x:c.width/2,
-      y:c.height/2,
-      vx:(Math.random()-0.5)*10,
-      vy:(Math.random()-0.5)*10,
-      life:60
-    });
-  }
-
-  function loop(){
-    ctx.clearRect(0,0,c.width,c.height);
-    particles.forEach(p=>{
-      p.x+=p.vx;
-      p.y+=p.vy;
-      p.life--;
-      ctx.fillStyle="hsl("+Math.random()*360+",100%,60%)";
-      ctx.fillRect(p.x,p.y,3,3);
-    });
-    particles=particles.filter(p=>p.life>0);
-    if(particles.length) requestAnimationFrame(loop);
-  }
-  loop();
-}
-
-renderProfile();
-renderGoals();
-updateChart();
+renderAthletes();
 </script>
 
 </body>
