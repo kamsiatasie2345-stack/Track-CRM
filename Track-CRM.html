@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>***** & ***** CRM</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #0f172a;
+            color: white;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        table {
+            margin: auto;
+            border-collapse: collapse;
+            width: 95%;
+            background: #1e293b;
+        }
+
+        th,
+        td {
+            border: 1px solid #334155;
+            padding: 8px;
+        }
+
+        th {
+            background: #2563eb;
+        }
+
+        input {
+            width: 100%;
+            background: #0f172a;
+            color: white;
+            border: none;
+            padding: 6px;
+            text-align: center;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 16px;
+            background: #22c55e;
+            border: none;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #16a34a;
+        }
+
+        .small {
+            width: 80px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🏃 Track &amp; Field **** CRM</h1>
+    <p><button>➕ Add Athlete</button><button>💾 Save</button><button>📂 Load</button></p>
+    <table id="crmTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Grade</th>
+                <th>100m</th>
+                <th>200m</th>
+                <th>400m</th>
+                <th>800m</th>
+                <th>1600m</th>
+                <th>Long Jump</th>
+                <th>High Jump</th>
+                <th>Triple Jump</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <script>
+        function addRow(data = {}) {
+          const table = document.querySelector("#crmTable tbody");
+          const row = table.insertRow();
+        
+          const fields = [
+            "name","grade","100","200","400","800","1600","lj","hj","tj"
+          ];
+        
+          fields.forEach(f => {
+            const cell = row.insertCell();
+            cell.innerHTML = `<input value="${data[f] || ""}">`;
+          });
+        }
+        
+        function saveData() {
+          const rows = document.querySelectorAll("#crmTable tbody tr");
+          const data = [];
+        
+          rows.forEach(row => {
+            const inputs = row.querySelectorAll("input");
+            data.push({
+              name: inputs[0].value,
+              grade: inputs[1].value,
+              100: inputs[2].value,
+              200: inputs[3].value,
+              400: inputs[4].value,
+              800: inputs[5].value,
+              1600: inputs[6].value,
+              lj: inputs[7].value,
+              hj: inputs[8].value,
+              tj: inputs[9].value
+            });
+          });
+        
+          localStorage.setItem("trackCRM", JSON.stringify(data));
+          alert("Saved!");
+        }
+        
+        function loadData() {
+          const data = JSON.parse(localStorage.getItem("trackCRM")) || [];
+          document.querySelector("#crmTable tbody").innerHTML = "";
+          data.forEach(addRow);
+        }
+        
+        loadData();
+    </script>
+
+<div style="color: red">Word to HTML trial - please <a href="https://wordtohtml.net/site/payment">Go PRO</a> to get whole HTML.</div>
+</body>
+
+</html>
