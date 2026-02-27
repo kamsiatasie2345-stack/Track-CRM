@@ -1,318 +1,322 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Track Performance</title>
-
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TrackPro Athlete</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-:root{
-  --bg:#0b0b0f;
-  --card:#14141a;
-  --accent:#00ff88;
-  --text:#f5f5f7;
-  --muted:#9ca3af;
-}
-
 body{
   margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto;
-  background:var(--bg);
-  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+  background:#0b0b0f;
+  color:white;
 }
-
-/* APP LAYOUT */
-
-.app{
-  padding-bottom:80px;
-}
-
-/* HEADER */
 
 .header{
-  font-size:26px;
-  font-weight:700;
   padding:20px;
+  font-size:28px;
+  font-weight:700;
+  background:linear-gradient(90deg,#ff003c,#ff8c00);
+  text-align:center;
 }
 
-/* GLASS CARD */
+.container{
+  padding:20px;
+  max-width:1100px;
+  margin:auto;
+}
 
 .card{
-  background:linear-gradient(145deg,#15151c,#0e0e13);
-  margin:15px;
+  background:#15151c;
   padding:18px;
   border-radius:18px;
-  box-shadow:0 10px 30px rgba(0,0,0,.6);
+  margin-bottom:18px;
+  box-shadow:0 0 25px rgba(255,0,60,.15);
 }
 
-/* PLAYER GRID */
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-  gap:15px;
-  padding:15px;
+input,select{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border-radius:10px;
+  border:none;
+  background:#0b0b0f;
+  color:white;
 }
-
-.player{
-  background:var(--card);
-  border-radius:18px;
-  padding:25px 10px;
-  text-align:center;
-  font-weight:600;
-  cursor:pointer;
-  transition:.2s;
-}
-
-.player:hover{transform:scale(1.05);}
-
-.add{
-  border:2px dashed #333;
-  font-size:28px;
-}
-
-/* BUTTONS */
 
 button{
+  background:linear-gradient(90deg,#ff003c,#ff8c00);
   border:none;
-  border-radius:14px;
-  padding:10px 16px;
-  font-weight:600;
-  cursor:pointer;
-}
-
-.primary{background:var(--accent);color:black;}
-.secondary{background:#2a2a2a;}
-
-/* TABLE */
-
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-
-th,td{
-  padding:10px;
-  text-align:center;
-}
-
-th{color:var(--muted);}
-
-input{
-  width:100%;
-  background:transparent;
-  border:none;
-  color:white;
-  text-align:center;
-}
-
-/* PR highlight */
-
-.pr{
-  background:var(--accent);
-  color:black;
-  border-radius:6px;
+  padding:12px 16px;
+  border-radius:12px;
   font-weight:700;
-}
-
-/* BOTTOM NAV */
-
-.nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  height:70px;
-  background:#111;
-  display:flex;
-  justify-content:space-around;
-  align-items:center;
-  font-size:14px;
-}
-
-.nav div{
-  text-align:center;
   cursor:pointer;
+  margin-top:8px;
+}
+
+.profile{
+  display:flex;
+  gap:15px;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.avatar{
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  object-fit:cover;
+  background:#222;
+}
+
+.fireworks{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+}
+
+.goal{
+  background:#0b0b0f;
+  padding:10px;
+  border-radius:10px;
+  margin-top:6px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="app">
+<div class="header">🏃 TrackPro Athlete</div>
 
-<div class="header">Performance</div>
+<div class="container">
 
-<div id="home"></div>
-<div id="profile" style="display:none"></div>
-<div id="stats" style="display:none"></div>
+<!-- PROFILE -->
+<div class="card">
+<h2>Athlete Profile</h2>
+
+<input id="name" placeholder="Name">
+<input id="grade" placeholder="Grade">
+<input id="photo" type="file">
+
+<button onclick="saveProfile()">Save Profile</button>
+
+<div id="profileView"></div>
+</div>
+
+<!-- TIMES -->
+<div class="card">
+<h2>Performance</h2>
+
+<select id="event">
+<option>100m</option>
+<option>200m</option>
+<option>400m</option>
+<option>800m</option>
+<option>1600m</option>
+</select>
+
+<input id="time" placeholder="Time (seconds)">
+<button onclick="addTime()">Add Result</button>
+
+<canvas id="chart"></canvas>
+</div>
+
+<!-- AI PREDICTOR -->
+<div class="card">
+<h2>🏁 Race Prediction AI</h2>
+<input id="predInput" placeholder="Enter recent time">
+<button onclick="predict()">Predict Next PR</button>
+<div id="prediction"></div>
+</div>
+
+<!-- SPLIT CALCULATOR -->
+<div class="card">
+<h2>⏱ Split Calculator</h2>
+<input id="splitTime" placeholder="Total time">
+<input id="splitDistance" placeholder="Distance (m)">
+<input id="splitSegment" placeholder="Segment (m)">
+<button onclick="calcSplit()">Calculate Split</button>
+<div id="splitResult"></div>
+</div>
+
+<!-- GOALS -->
+<div class="card">
+<h2>🎯 Goals</h2>
+<input id="goalInput" placeholder="Enter goal">
+<button onclick="addGoal()">Add Goal</button>
+<div id="goals"></div>
+</div>
+
+<!-- WORKOUT -->
+<div class="card">
+<h2>🏃 Workout Planner</h2>
+<textarea id="workout" rows="4" style="width:100%;background:#0b0b0f;color:white;border:none;border-radius:10px;padding:10px;"></textarea>
+<button onclick="saveWorkout()">Save Workout</button>
+</div>
+
+<!-- SYNC -->
+<div class="card">
+<h2>☁️ Sync</h2>
+<button onclick="exportData()">Export Data</button>
+<input type="file" onchange="importData(event)">
+</div>
 
 </div>
 
-<div class="nav">
-  <div onclick="showHome()">🏠<br>Players</div>
-  <div onclick="showStats()">📊<br>Stats</div>
-  <div onclick="alert('Future profile settings')">⚙️<br>Settings</div>
-</div>
+<canvas class="fireworks" id="fx"></canvas>
 
 <script>
-let db = JSON.parse(localStorage.getItem("appTrack")) || {};
-let current=null;
+let data = JSON.parse(localStorage.getItem("trackPro")) || {
+  profile:{},
+  results:{},
+  goals:[],
+  workout:""
+};
 
-function save(){localStorage.setItem("appTrack",JSON.stringify(db));}
-
-/* HOME */
-
-function showHome(){
-  hideAll();
-  home.style.display="block";
-
-  let html='<div class="grid">';
-
-  Object.keys(db).forEach(n=>{
-    html+=`<div class="player" onclick="openPlayer('${n}')">${n}</div>`;
-  });
-
-  html+=`<div class="player add" onclick="newPlayer()">＋</div></div>`;
-  home.innerHTML=html;
-}
-
-function newPlayer(){
-  const n=prompt("Name?");
-  if(!n) return;
-  db[n]=[];
-  save();
-  showHome();
-}
-
-/* PROFILE */
-
-function openPlayer(n){
-  current=n;
-  hideAll();
-  profile.style.display="block";
-
-  let html=`
-    <div class="card">
-      <h2>${n}</h2>
-      <button class="primary" onclick="addRow()">Add Result</button>
-      <button class="secondary" onclick="saveProfile()">Save</button>
-    </div>
-
-    <div class="card">
-      <table id="tbl">
-        <tr>
-          <th>Meet</th>
-          <th>100</th><th>200</th><th>400</th>
-          <th>800</th><th>1600</th>
-          <th>LJ</th><th>HJ</th><th>TJ</th>
-        </tr>
-      </table>
-    </div>
-
-    <div class="card" id="bests"></div>
-  `;
-
-  profile.innerHTML=html;
-
-  db[n].forEach(addRow);
-  updatePR();
-}
-
-function addRow(data={}){
-  const r=tbl.insertRow();
-
-  const f=["meet","100","200","400","800","1600","lj","hj","tj"];
-
-  f.forEach(x=>{
-    const c=r.insertCell();
-    c.innerHTML=`<input value="${data[x]||""}" oninput="updatePR()">`;
-  });
+function saveAll(){
+  localStorage.setItem("trackPro",JSON.stringify(data));
 }
 
 function saveProfile(){
-  const rows=document.querySelectorAll("#tbl tr");
-  const data=[];
-
-  rows.forEach((r,i)=>{
-    if(i===0) return;
-    const x=r.querySelectorAll("input");
-    data.push({
-      meet:x[0].value,
-      100:x[1].value,
-      200:x[2].value,
-      400:x[3].value,
-      800:x[4].value,
-      1600:x[5].value,
-      lj:x[6].value,
-      hj:x[7].value,
-      tj:x[8].value
-    });
-  });
-
-  db[current]=data;
-  save();
+  const file=document.getElementById("photo").files[0];
+  if(file){
+    const reader=new FileReader();
+    reader.onload=()=>{
+      data.profile.photo=reader.result;
+      finishProfile();
+    };
+    reader.readAsDataURL(file);
+  } else finishProfile();
 }
 
-/* PR + BESTS */
+function finishProfile(){
+  data.profile.name=name.value;
+  data.profile.grade=grade.value;
+  saveAll();
+  renderProfile();
+}
 
-function updatePR(){
-  const rows=document.querySelectorAll("#tbl tr");
-  const best={1:Infinity,2:Infinity,3:Infinity,4:Infinity,5:Infinity,6:0,7:0,8:0};
-
-  rows.forEach((r,i)=>{
-    if(i===0) return;
-    const x=r.querySelectorAll("input");
-
-    for(let c=1;c<=5;c++){
-      const v=parseFloat(x[c].value);
-      if(!isNaN(v)&&v<best[c]) best[c]=v;
-    }
-
-    for(let c=6;c<=8;c++){
-      const v=parseFloat(x[c].value);
-      if(!isNaN(v)&&v>best[c]) best[c]=v;
-    }
-  });
-
-  rows.forEach((r,i)=>{
-    if(i===0) return;
-    const x=r.querySelectorAll("input");
-
-    for(let c=1;c<=8;c++){
-      x[c].classList.remove("pr");
-      const v=parseFloat(x[c].value);
-      if(isNaN(v)) continue;
-
-      if((c<=5 && v===best[c]) || (c>=6 && v===best[c]))
-        x[c].classList.add("pr");
-    }
-  });
-
-  bests.innerHTML = `
-    <h3>Personal Bests</h3>
-    100 ${best[1]||"-"} | 200 ${best[2]||"-"} | 400 ${best[3]||"-"}<br>
-    800 ${best[4]||"-"} | 1600 ${best[5]||"-"}<br>
-    LJ ${best[6]||"-"} | HJ ${best[7]||"-"} | TJ ${best[8]||"-"}
+function renderProfile(){
+  if(!data.profile.name) return;
+  profileView.innerHTML=`
+    <div class="profile">
+      <img class="avatar" src="${data.profile.photo||''}">
+      <div>
+        <b>${data.profile.name}</b><br>
+        Grade ${data.profile.grade}
+      </div>
+    </div>
   `;
 }
 
-/* STATS SCREEN */
+function addTime(){
+  const e=event.value;
+  const t=parseFloat(time.value);
+  if(!data.results[e]) data.results[e]=[];
+  const best=Math.min(...(data.results[e].length?data.results[e]:[9999]));
+  data.results[e].push(t);
+  saveAll();
+  updateChart();
 
-function showStats(){
-  hideAll();
-  stats.style.display="block";
-  stats.innerHTML=`<div class="card"><h2>Stats coming soon</h2></div>`;
+  if(t<best) fireworks();
 }
 
-function hideAll(){
-  home.style.display="none";
-  profile.style.display="none";
-  stats.style.display="none";
+let chart;
+
+function updateChart(){
+  const e=event.value;
+  const arr=data.results[e]||[];
+  if(chart) chart.destroy();
+  chart=new Chart(chart,{
+    type:"line",
+    data:{labels:arr.map((_,i)=>i+1),datasets:[{data:arr}]},
+    options:{plugins:{legend:{display:false}}}
+  });
 }
 
-showHome();
+function predict(){
+  const t=parseFloat(predInput.value);
+  const predicted=(t*0.97).toFixed(2);
+  prediction.innerText="Predicted PR: "+predicted+" sec";
+}
+
+function calcSplit(){
+  const T=+splitTime.value;
+  const D=+splitDistance.value;
+  const S=+splitSegment.value;
+  splitResult.innerText="Split: "+(T/D*S).toFixed(2)+" sec";
+}
+
+function addGoal(){
+  data.goals.push(goalInput.value);
+  saveAll();
+  renderGoals();
+}
+
+function renderGoals(){
+  goals.innerHTML=data.goals.map(g=>`<div class="goal">${g}</div>`).join("");
+}
+
+function saveWorkout(){
+  data.workout=workout.value;
+  saveAll();
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify(data)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="trackpro.json";
+  a.click();
+}
+
+function importData(e){
+  const file=e.target.files[0];
+  const reader=new FileReader();
+  reader.onload=()=>{
+    data=JSON.parse(reader.result);
+    saveAll();
+    location.reload();
+  };
+  reader.readAsText(file);
+}
+
+function fireworks(){
+  const c=fx;
+  const ctx=c.getContext("2d");
+  c.width=innerWidth;
+  c.height=innerHeight;
+
+  let particles=[];
+  for(let i=0;i<150;i++){
+    particles.push({
+      x:c.width/2,
+      y:c.height/2,
+      vx:(Math.random()-0.5)*10,
+      vy:(Math.random()-0.5)*10,
+      life:60
+    });
+  }
+
+  function loop(){
+    ctx.clearRect(0,0,c.width,c.height);
+    particles.forEach(p=>{
+      p.x+=p.vx;
+      p.y+=p.vy;
+      p.life--;
+      ctx.fillStyle="hsl("+Math.random()*360+",100%,60%)";
+      ctx.fillRect(p.x,p.y,3,3);
+    });
+    particles=particles.filter(p=>p.life>0);
+    if(particles.length) requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+renderProfile();
+renderGoals();
+updateChart();
 </script>
 
 </body>
