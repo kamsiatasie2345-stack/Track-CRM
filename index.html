@@ -1,362 +1,132 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>TrackPro Elite</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Runner Profiles</title>
 <style>
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
-  background:#0b0b0f;
-  color:white;
-  overflow:hidden;
-}
+  body { margin:0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#0b0b0f; color:white; overflow:hidden; }
+  .page { position:absolute; inset:0; padding:24px; opacity:0; transform:translateX(40px); transition:all .35s ease; pointer-events:none; }
+  .page.active { opacity:1; transform:translateX(0); pointer-events:auto; }
+  h1 { margin-top:0; }
 
-/* HEADER */
-.header{
-  padding:18px;
-  text-align:center;
-  font-size:24px;
-  font-weight:700;
-  background:linear-gradient(90deg,#ff003c,#ff8c00);
-}
+  /* GRID */
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:18px; margin-top:24px; }
 
-/* NAV BAR */
-.nav{
-  display:flex;
-  justify-content:space-around;
-  background:#111;
-  padding:10px 0;
-}
+  /* PROFILE CARD */
+  .card { position:relative; height:140px; border-radius:22px; background:linear-gradient(145deg,#1a1a24,#111119); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:600; cursor:pointer; transition:transform .2s ease, opacity .25s ease; }
+  .card:hover { transform:scale(1.05); }
 
-.nav button{
-  background:none;
-  border:none;
-  color:white;
-  font-weight:600;
-  font-size:14px;
-  cursor:pointer;
-}
+  /* DELETE BUTTON */
+  .delete { position:absolute; top:8px; right:10px; font-size:18px; opacity:.7; cursor:pointer; }
+  .delete:hover { opacity:1; }
 
-/* PAGE SYSTEM */
-.page{
-  position:absolute;
-  top:110px;
-  width:100%;
-  height:calc(100% - 110px);
-  padding:20px;
-  overflow-y:auto;
-  opacity:0;
-  transform:translateX(40px);
-  transition:.45s ease;
-  pointer-events:none;
-}
+  /* ADD CARD */
+  .add { font-size:48px; color:#aaa; }
 
-.page.active{
-  opacity:1;
-  transform:translateX(0);
-  pointer-events:auto;
-}
+  /* NAV */
+  .nav { position:fixed; bottom:0; left:0; right:0; height:70px; background:#111; display:flex; justify-content:space-around; align-items:center; }
+  .nav button { background:none; border:none; color:#bbb; font-size:14px; }
+  .nav button.active { color:white; font-weight:600; }
 
-/* PROFILE GRID */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
-  gap:18px;
-}
-
-.profile{
-  background:#15151c;
-  border-radius:18px;
-  height:140px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  cursor:pointer;
-  box-shadow:0 0 18px rgba(255,0,60,.2);
-  transition:.2s;
-}
-
-.profile:hover{transform:scale(1.05);}
-
-.addBox{
-  font-size:42px;
-  color:#ff8c00;
-}
-
-/* CARDS */
-.card{
-  background:#15151c;
-  padding:18px;
-  border-radius:18px;
-  margin-bottom:18px;
-}
-
-/* INPUTS */
-input,select,textarea{
-  width:100%;
-  padding:10px;
-  margin:6px 0;
-  border-radius:10px;
-  border:none;
-  background:#0b0b0f;
-  color:white;
-}
-
-button.primary{
-  background:linear-gradient(90deg,#ff003c,#ff8c00);
-  border:none;
-  padding:10px 16px;
-  border-radius:12px;
-  font-weight:700;
-  cursor:pointer;
-}
-
-.backBtn{
-  margin-bottom:10px;
-  background:none;
-  border:none;
-  color:#ff8c00;
-  font-weight:600;
-  cursor:pointer;
-}
-
-.pr{
-  color:#22c55e;
-  font-weight:bold;
-  font-size:18px;
-}
+  /* SIMPLE INPUT */
+  input { width:100%; padding:14px; border-radius:12px; border:none; background:#1a1a24; color:white; font-size:16px; margin-top:12px; }
+  .btn { margin-top:16px; padding:14px; border:none; border-radius:14px; background:#2a6df4; color:white; font-size:16px; width:100%; }
 </style>
 </head>
-
 <body>
 
-<div class="header">🏃 TrackPro Elite</div>
-
-<div class="nav" id="nav" style="display:none;">
-  <button onclick="switchTab('stats')">Stats</button>
-  <button onclick="switchTab('goals')">Goals</button>
-  <button onclick="switchTab('workout')">Workout</button>
-  <button onclick="switchTab('tools')">Tools</button>
+<!-- PROFILES PAGE -->
+<div id="profilesPage" class="page active">
+  <h1>Profiles</h1>
+  <div id="profilesGrid" class="grid"></div>
 </div>
 
-<!-- PROFILES -->
-<div id="profiles" class="page active">
-  <div class="grid" id="profileGrid"></div>
+<!-- CREATE PROFILE PAGE -->
+<div id="createPage" class="page">
+  <h1>New Profile</h1>
+  <input id="nameInput" placeholder="Name" />
+  <button class="btn" onclick="createProfile()">Save Profile</button>
 </div>
 
-<!-- STATS -->
-<div id="stats" class="page">
-  <button class="backBtn" onclick="goHome()">⬅ Profiles</button>
-
-  <div class="card">
-    <h2 id="athleteName"></h2>
-
-    <select id="eventSelect" onchange="showEventChart()">
-      <option>100m</option>
-      <option>200m</option>
-      <option>400m</option>
-      <option>800m</option>
-      <option>1600m</option>
-      <option>Long Jump</option>
-      <option>High Jump</option>
-      <option>Triple Jump</option>
-    </select>
-
-    <input id="resultInput" placeholder="Time or Distance">
-    <button class="primary" onclick="addResult()">Add Result</button>
-
-    <div id="prNotice"></div>
-
-    <canvas id="chartCanvas"></canvas>
-  </div>
+<!-- STATS PAGE -->
+<div id="statsPage" class="page">
+  <h1>Stats</h1>
+  <p>Charts will go here.</p>
 </div>
 
-<!-- GOALS -->
-<div id="goals" class="page">
-  <button class="backBtn" onclick="goHome()">⬅ Profiles</button>
-
-  <div class="card">
-    <h2>🎯 Goals</h2>
-    <input id="goalInput" placeholder="Goal">
-    <button class="primary" onclick="addGoal()">Add</button>
-    <div id="goalList"></div>
-  </div>
+<!-- WORKOUT PAGE -->
+<div id="workoutPage" class="page">
+  <h1>Workout</h1>
+  <p>Planner coming soon.</p>
 </div>
 
-<!-- WORKOUT -->
-<div id="workout" class="page">
-  <button class="backBtn" onclick="goHome()">⬅ Profiles</button>
-
-  <div class="card">
-    <h2>🏃 Workout Planner</h2>
-    <textarea id="workoutText" rows="6"></textarea>
-    <button class="primary" onclick="saveWorkout()">Save Workout</button>
-  </div>
-</div>
-
-<!-- TOOLS -->
-<div id="tools" class="page">
-  <button class="backBtn" onclick="goHome()">⬅ Profiles</button>
-
-  <div class="card">
-    <h3>🏁 Race Prediction AI</h3>
-    <input id="predictInput" placeholder="Recent time">
-    <button class="primary" onclick="predict()">Predict</button>
-    <div id="predictionResult"></div>
-  </div>
-
-  <div class="card">
-    <h3>⏱ Split Calculator</h3>
-    <input id="totalTime" placeholder="Total time">
-    <input id="distance" placeholder="Total distance">
-    <input id="segment" placeholder="Segment distance">
-    <button class="primary" onclick="calculateSplit()">Calculate</button>
-    <div id="splitResult"></div>
-  </div>
+<!-- NAV -->
+<div class="nav">
+  <button onclick="go('profilesPage')" class="active">Profiles</button>
+  <button onclick="go('statsPage')">Stats</button>
+  <button onclick="go('workoutPage')">Workout</button>
 </div>
 
 <script>
-let data = JSON.parse(localStorage.getItem("trackProElite")) || {athletes:[]};
-let current=null;
-let chart;
+let profiles = JSON.parse(localStorage.getItem('profiles') || '[]');
+const pages = document.querySelectorAll('.page');
 
-function save(){localStorage.setItem("trackProElite",JSON.stringify(data));}
-
-/* PROFILES */
-
-function renderProfiles(){
-  profileGrid.innerHTML="";
-  data.athletes.forEach((a,i)=>{
-    profileGrid.innerHTML+=`
-      <div class="profile" onclick="openAthlete(${i})">
-        <div style="font-size:32px">🏃</div>
-        <div>${a.name}</div>
-      </div>`;
-  });
-
-  profileGrid.innerHTML+=`
-    <div class="profile" onclick="addAthlete()">
-      <div class="addBox">+</div>
-    </div>`;
+function go(id) {
+  pages.forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
-function addAthlete(){
-  const name=prompt("Athlete name:");
-  if(!name) return;
-  data.athletes.push({name,results:{},goals:[],workout:""});
+function save() {
+  localStorage.setItem('profiles', JSON.stringify(profiles));
+}
+
+function renderProfiles() {
+  const grid = document.getElementById('profilesGrid');
+  grid.innerHTML = '';
+
+  profiles.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.textContent = p.name;
+
+    const del = document.createElement('div');
+    del.className = 'delete';
+    del.textContent = '✕';
+    del.onclick = (e) => {
+      e.stopPropagation();
+      card.style.opacity = '0';
+      card.style.transform = 'scale(.8)';
+      setTimeout(() => {
+        profiles.splice(i,1);
+        save();
+        renderProfiles();
+      }, 180);
+    };
+
+    card.appendChild(del);
+    grid.appendChild(card);
+  });
+
+  const add = document.createElement('div');
+  add.className = 'card add';
+  add.textContent = '+';
+  add.onclick = () => go('createPage');
+  grid.appendChild(add);
+}
+
+function createProfile() {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) return;
+
+  profiles.push({ name });
   save();
+  document.getElementById('nameInput').value = '';
   renderProfiles();
-}
-
-function openAthlete(i){
-  current=i;
-  athleteName.innerText=data.athletes[i].name;
-  nav.style.display="flex";
-  switchTab("stats");
-}
-
-function goHome(){
-  nav.style.display="none";
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  profiles.classList.add("active");
-}
-
-/* TAB SWITCH */
-
-function switchTab(tab){
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  document.getElementById(tab).classList.add("active");
-
-  if(tab==="stats") showEventChart();
-  if(tab==="goals") renderGoals();
-  if(tab==="workout") workoutText.value=data.athletes[current].workout;
-}
-
-/* RESULTS + PR */
-
-function addResult(){
-  const e=eventSelect.value;
-  const val=parseFloat(resultInput.value);
-  const a=data.athletes[current];
-
-  if(!a.results[e]) a.results[e]=[];
-
-  const best=Math.min(...a.results[e],Infinity);
-  a.results[e].push(val);
-  save();
-
-  prNotice.innerHTML = val < best ? "🔥 NEW PR!" : "";
-  prNotice.className = val < best ? "pr" : "";
-
-  showEventChart();
-}
-
-/* EVENT CHART */
-
-function showEventChart(){
-  const a=data.athletes[current];
-  const e=eventSelect.value;
-  const arr=a.results[e] || [];
-
-  if(chart) chart.destroy();
-
-  chart=new Chart(chartCanvas,{
-    type:"line",
-    data:{
-      labels:arr.map((_,i)=>i+1),
-      datasets:[{
-        data:arr,
-        borderColor:"#ff8c00",
-        tension:.35
-      }]
-    },
-    options:{
-      plugins:{legend:{display:false}},
-      animation:{duration:900}
-    }
-  });
-}
-
-/* GOALS */
-
-function addGoal(){
-  data.athletes[current].goals.push(goalInput.value);
-  save();
-  renderGoals();
-}
-
-function renderGoals(){
-  const g=data.athletes[current].goals;
-  goalList.innerHTML=g.map(x=>`<div>${x}</div>`).join("");
-}
-
-/* WORKOUT */
-
-function saveWorkout(){
-  data.athletes[current].workout=workoutText.value;
-  save();
-}
-
-/* TOOLS */
-
-function predict(){
-  const t=parseFloat(predictInput.value);
-  predictionResult.innerText="Predicted PR: "+(t*0.97).toFixed(2);
-}
-
-function calculateSplit(){
-  const T=+totalTime.value;
-  const D=+distance.value;
-  const S=+segment.value;
-  splitResult.innerText="Split: "+(T/D*S).toFixed(2);
+  go('profilesPage');
 }
 
 renderProfiles();
 </script>
-
 </body>
 </html>
