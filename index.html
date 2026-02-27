@@ -1,226 +1,297 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Track & Field CRM</title>
+<title>Track Player CRM</title>
 
 <style>
 body{
+  margin:0;
   font-family:system-ui;
-  background:#0f172a;
+  background:#0b0b0b;
   color:white;
+}
+
+header{
+  padding:20px;
+  font-size:22px;
+}
+
+.container{padding:20px;}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:20px;
+}
+
+.card{
+  background:#141414;
+  border-radius:12px;
+  padding:30px 10px;
   text-align:center;
+  cursor:pointer;
+  transition:.2s;
+  position:relative;
 }
 
-h1{margin:20px;}
+.card:hover{
+  transform:scale(1.06);
+  background:#1f1f1f;
+}
 
-select,button{
-  padding:10px;
-  margin:6px;
+.card button{
+  position:absolute;
+  top:8px;
+  right:8px;
+  background:#ef4444;
   border:none;
-  border-radius:8px;
-  font-weight:bold;
-}
-
-button{
-  background:#22c55e;
+  padding:4px 8px;
+  border-radius:6px;
+  color:white;
   cursor:pointer;
 }
 
-button:hover{background:#16a34a;}
+.addCard{
+  border:2px dashed #444;
+  background:#111827;
+  font-size:28px;
+}
+
+button{
+  padding:10px 16px;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+  margin:5px 5px 10px 0;
+}
+
+.green{background:#22c55e;}
+.blue{background:#3b82f6;}
+.red{background:#ef4444;}
 
 table{
-  margin:auto;
+  width:100%;
   border-collapse:collapse;
-  width:95%;
-  background:#1e293b;
-  border-radius:10px;
-  overflow:hidden;
+  background:#141414;
+  margin-top:10px;
 }
 
 th,td{
-  border:1px solid #334155;
+  border:1px solid #2a2a2a;
   padding:10px;
+  text-align:center;
 }
 
 th{background:#2563eb;}
 
 input{
   width:100%;
-  background:#0f172a;
-  color:white;
+  background:transparent;
   border:none;
-  padding:6px;
+  color:white;
   text-align:center;
 }
 
-.pr{background:#facc15;color:black;font-weight:bold;}
+.pr{
+  background:#facc15;
+  color:black;
+  font-weight:bold;
+}
+
+.panel{
+  background:#141414;
+  padding:15px;
+  margin-top:15px;
+  border-radius:10px;
+}
 </style>
 </head>
 
 <body>
 
-<h1>🏃 Track & Field CRM</h1>
+<header>🏃 Player Performance Tracker</header>
 
-<div>
-<select id="athleteSelect"></select>
-<button onclick="newAthlete()">➕ New Athlete</button>
-<button onclick="deleteAthlete()">🗑️ Delete</button>
-</div>
-
-<p>
-<button onclick="addRow()">➕ Add Result</button>
-<button onclick="saveAll()">💾 Save</button>
-</p>
-
-<table id="crmTable">
-<thead>
-<tr>
-<th>Meet / Date</th>
-<th>100m</th>
-<th>200m</th>
-<th>400m</th>
-<th>800m</th>
-<th>1600m</th>
-<th>Long Jump</th>
-<th>High Jump</th>
-<th>Triple Jump</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
+<div id="home" class="container"></div>
+<div id="profile" class="container" style="display:none;"></div>
 
 <script>
-let db = JSON.parse(localStorage.getItem("trackCRM2")) || {};
-let current = null;
+let db = JSON.parse(localStorage.getItem("soloPlayersCRM")) || {};
+let current=null;
 
-function refreshList(){
-  const sel = document.getElementById("athleteSelect");
-  sel.innerHTML="";
-  Object.keys(db).forEach(name=>{
-    const o=document.createElement("option");
-    o.textContent=name;
-    sel.appendChild(o);
-  });
-
-  if(!current && sel.options.length){
-    current=sel.options[0].text;
-  }
-
-  sel.value=current || "";
-  loadAthlete();
+function save(){
+  localStorage.setItem("soloPlayersCRM", JSON.stringify(db));
 }
 
-function newAthlete(){
-  const name=prompt("Athlete name?");
+/* ---------- HOME SCREEN ---------- */
+
+function showHome(){
+  document.getElementById("profile").style.display="none";
+  const home=document.getElementById("home");
+  home.style.display="block";
+
+  let html='<div class="grid">';
+
+  Object.keys(db).forEach(name=>{
+    html+=`
+      <div class="card" onclick="openPlayer('${name}')">
+        ${name}
+        <button onclick="event.stopPropagation();deletePlayer('${name}')">✖</button>
+      </div>
+    `;
+  });
+
+  html+=`
+    <div class="card addCard" onclick="newPlayer()">➕</div>
+  </div>`;
+
+  home.innerHTML=html;
+}
+
+function newPlayer(){
+  const name=prompt("Player name?");
   if(!name) return;
   db[name]=[];
-  current=name;
-  refreshList();
-  saveAll();
+  save();
+  showHome();
 }
 
-function deleteAthlete(){
-  if(!current) return;
-  if(confirm("Delete athlete?")){
-    delete db[current];
-    current=null;
-    refreshList();
-    saveAll();
+function deletePlayer(name){
+  if(confirm("Delete "+name+"?")){
+    delete db[name];
+    save();
+    showHome();
   }
 }
 
-document.getElementById("athleteSelect").onchange=e=>{
-  current=e.target.value;
-  loadAthlete();
-};
+/* ---------- PROFILE ---------- */
+
+function openPlayer(name){
+  current=name;
+  document.getElementById("home").style.display="none";
+  const p=document.getElementById("profile");
+  p.style.display="block";
+
+  let html=`
+    <button class="blue" onclick="showHome()">← Back</button>
+    <h2>${name}</h2>
+
+    <button class="green" onclick="addRow()">➕ Add Result</button>
+    <button class="red" onclick="clearAll()">🗑 Clear All</button>
+    <button class="blue" onclick="saveProfile()">💾 Save</button>
+
+    <table id="tbl">
+      <tr>
+        <th>Meet</th>
+        <th>100</th><th>200</th><th>400</th>
+        <th>800</th><th>1600</th>
+        <th>LJ</th><th>HJ</th><th>TJ</th>
+        <th>❌</th>
+      </tr>
+    </table>
+
+    <div id="bests" class="panel"></div>
+  `;
+
+  p.innerHTML=html;
+
+  db[name].forEach(addRow);
+  updatePR();
+}
 
 function addRow(data={}){
-  const row=document.querySelector("#crmTable tbody").insertRow();
+  const tbl=document.getElementById("tbl");
+  const r=tbl.insertRow();
 
-  const fields=[
-    "meet","100","200","400","800","1600","lj","hj","tj"
-  ];
+  const fields=["meet","100","200","400","800","1600","lj","hj","tj"];
 
   fields.forEach(f=>{
-    const cell=row.insertCell();
-    const val=data[f]||"";
-    cell.innerHTML=`<input value="${val}" oninput="checkPR()">`;
+    const c=r.insertCell();
+    c.innerHTML=`<input value="${data[f]||""}" oninput="updatePR()">`;
   });
+
+  const del=r.insertCell();
+  del.innerHTML=`<button class="red" onclick="this.closest('tr').remove();updatePR()">X</button>`;
 }
 
-function loadAthlete(){
-  const body=document.querySelector("#crmTable tbody");
-  body.innerHTML="";
-  if(!current) return;
-
-  (db[current]||[]).forEach(addRow);
-  checkPR();
-}
-
-function saveAll(){
-  if(!current) return;
-
-  const rows=document.querySelectorAll("#crmTable tbody tr");
+function saveProfile(){
+  const rows=document.querySelectorAll("#tbl tr");
   const data=[];
 
-  rows.forEach(row=>{
-    const i=row.querySelectorAll("input");
+  rows.forEach((r,i)=>{
+    if(i===0) return;
+    const x=r.querySelectorAll("input");
     data.push({
-      meet:i[0].value,
-      100:i[1].value,
-      200:i[2].value,
-      400:i[3].value,
-      800:i[4].value,
-      1600:i[5].value,
-      lj:i[6].value,
-      hj:i[7].value,
-      tj:i[8].value
+      meet:x[0].value,
+      100:x[1].value,
+      200:x[2].value,
+      400:x[3].value,
+      800:x[4].value,
+      1600:x[5].value,
+      lj:x[6].value,
+      hj:x[7].value,
+      tj:x[8].value
     });
   });
 
   db[current]=data;
-  localStorage.setItem("trackCRM2",JSON.stringify(db));
+  save();
   alert("Saved!");
 }
 
-function checkPR(){
-  const rows=document.querySelectorAll("#crmTable tbody tr");
+function clearAll(){
+  if(confirm("Clear all results?")){
+    db[current]=[];
+    save();
+    openPlayer(current);
+  }
+}
 
-  const best={
-    1:Infinity,2:Infinity,3:Infinity,4:Infinity,5:Infinity,
-    6:0,7:0,8:0
-  };
+/* ---------- PR SYSTEM ---------- */
 
-  rows.forEach(r=>{
-    const i=r.querySelectorAll("input");
+function updatePR(){
+  const rows=document.querySelectorAll("#tbl tr");
+  const best={1:Infinity,2:Infinity,3:Infinity,4:Infinity,5:Infinity,6:0,7:0,8:0};
+
+  rows.forEach((r,i)=>{
+    if(i===0) return;
+    const x=r.querySelectorAll("input");
 
     for(let c=1;c<=5;c++){
-      const v=parseFloat(i[c].value);
-      if(!isNaN(v) && v<best[c]) best[c]=v;
+      const v=parseFloat(x[c].value);
+      if(!isNaN(v)&&v<best[c]) best[c]=v;
     }
 
     for(let c=6;c<=8;c++){
-      const v=parseFloat(i[c].value);
-      if(!isNaN(v) && v>best[c]) best[c]=v;
+      const v=parseFloat(x[c].value);
+      if(!isNaN(v)&&v>best[c]) best[c]=v;
     }
   });
 
-  rows.forEach(r=>{
-    const i=r.querySelectorAll("input");
+  rows.forEach((r,i)=>{
+    if(i===0) return;
+    const x=r.querySelectorAll("input");
 
     for(let c=1;c<=8;c++){
-      i[c].classList.remove("pr");
-      const v=parseFloat(i[c].value);
+      x[c].classList.remove("pr");
+      const v=parseFloat(x[c].value);
       if(isNaN(v)) continue;
 
-      if(c<=5 && v===best[c]) i[c].classList.add("pr");
-      if(c>=6 && v===best[c]) i[c].classList.add("pr");
+      if((c<=5 && v===best[c]) || (c>=6 && v===best[c]))
+        x[c].classList.add("pr");
     }
   });
+
+  document.getElementById("bests").innerHTML=`
+    <h3>🥇 Personal Bests</h3>
+    100: ${best[1]||"-"} | 200: ${best[2]||"-"} | 400: ${best[3]||"-"}<br>
+    800: ${best[4]||"-"} | 1600: ${best[5]||"-"}<br>
+    LJ: ${best[6]||"-"} | HJ: ${best[7]||"-"} | TJ: ${best[8]||"-"}
+  `;
 }
 
-refreshList();
+showHome();
 </script>
 
 </body>
