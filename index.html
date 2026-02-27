@@ -2,16 +2,17 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Performance Tracker</title>
+<title>Track Performance</title>
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
 :root{
-  --bg:#0a0a0a;
-  --card:#121212;
-  --accent:#00e676;
+  --bg:#0b0b0f;
+  --card:#14141a;
+  --accent:#00ff88;
   --text:#f5f5f7;
   --muted:#9ca3af;
-  --danger:#ff453a;
 }
 
 body{
@@ -21,103 +22,82 @@ body{
   color:var(--text);
 }
 
-/* HEADER */
+/* APP LAYOUT */
 
-header{
-  padding:22px;
-  font-size:26px;
-  font-weight:700;
-  letter-spacing:.5px;
+.app{
+  padding-bottom:80px;
 }
 
-/* GRID */
+/* HEADER */
 
-.container{padding:20px;}
+.header{
+  font-size:26px;
+  font-weight:700;
+  padding:20px;
+}
+
+/* GLASS CARD */
+
+.card{
+  background:linear-gradient(145deg,#15151c,#0e0e13);
+  margin:15px;
+  padding:18px;
+  border-radius:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+
+/* PLAYER GRID */
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
-  gap:20px;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:15px;
+  padding:15px;
 }
 
-.card{
+.player{
   background:var(--card);
   border-radius:18px;
-  padding:40px 12px;
+  padding:25px 10px;
   text-align:center;
   font-weight:600;
   cursor:pointer;
-  transition:.25s;
-  position:relative;
-  box-shadow:0 10px 25px rgba(0,0,0,.5);
+  transition:.2s;
 }
 
-.card:hover{
-  transform:translateY(-6px) scale(1.03);
-  background:#1a1a1a;
-}
+.player:hover{transform:scale(1.05);}
 
-.card button{
-  position:absolute;
-  top:10px;
-  right:10px;
-  background:var(--danger);
-  border:none;
-  color:white;
-  border-radius:50%;
-  width:26px;
-  height:26px;
-  cursor:pointer;
-}
-
-.addCard{
+.add{
   border:2px dashed #333;
-  background:#101010;
-  font-size:32px;
+  font-size:28px;
 }
 
-/* PROFILE */
-
-.topbar{
-  display:flex;
-  gap:10px;
-  margin-bottom:15px;
-}
+/* BUTTONS */
 
 button{
   border:none;
-  border-radius:12px;
+  border-radius:14px;
   padding:10px 16px;
   font-weight:600;
   cursor:pointer;
 }
 
-.primary{background:var(--accent); color:black;}
+.primary{background:var(--accent);color:black;}
 .secondary{background:#2a2a2a;}
-.danger{background:var(--danger);}
+
+/* TABLE */
 
 table{
   width:100%;
   border-collapse:collapse;
-  background:var(--card);
-  border-radius:16px;
-  overflow:hidden;
 }
 
 th,td{
-  padding:12px;
+  padding:10px;
   text-align:center;
 }
 
-th{
-  background:#1f1f1f;
-  color:var(--muted);
-  font-weight:600;
-}
-
-tr:not(:last-child){
-  border-bottom:1px solid #222;
-}
+th{color:var(--muted);}
 
 input{
   width:100%;
@@ -125,8 +105,9 @@ input{
   border:none;
   color:white;
   text-align:center;
-  font-size:15px;
 }
+
+/* PR highlight */
 
 .pr{
   background:var(--accent);
@@ -135,111 +116,111 @@ input{
   font-weight:700;
 }
 
-/* BEST PANEL */
+/* BOTTOM NAV */
 
-.panel{
-  margin-top:18px;
-  background:var(--card);
-  padding:16px;
-  border-radius:16px;
-  box-shadow:0 10px 20px rgba(0,0,0,.4);
+.nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  height:70px;
+  background:#111;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  font-size:14px;
 }
 
-.panel h3{
-  margin-top:0;
-  color:var(--muted);
-  font-weight:600;
+.nav div{
+  text-align:center;
+  cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<header>Performance Tracker</header>
+<div class="app">
 
-<div id="home" class="container"></div>
-<div id="profile" class="container" style="display:none;"></div>
+<div class="header">Performance</div>
+
+<div id="home"></div>
+<div id="profile" style="display:none"></div>
+<div id="stats" style="display:none"></div>
+
+</div>
+
+<div class="nav">
+  <div onclick="showHome()">🏠<br>Players</div>
+  <div onclick="showStats()">📊<br>Stats</div>
+  <div onclick="alert('Future profile settings')">⚙️<br>Settings</div>
+</div>
 
 <script>
-let db = JSON.parse(localStorage.getItem("proPlayersCRM")) || {};
+let db = JSON.parse(localStorage.getItem("appTrack")) || {};
 let current=null;
 
-function save(){localStorage.setItem("proPlayersCRM",JSON.stringify(db));}
+function save(){localStorage.setItem("appTrack",JSON.stringify(db));}
 
 /* HOME */
 
 function showHome(){
-  profile.style.display="none";
+  hideAll();
   home.style.display="block";
 
   let html='<div class="grid">';
 
-  Object.keys(db).forEach(name=>{
-    html+=`
-      <div class="card" onclick="openPlayer('${name}')">
-        ${name}
-        <button onclick="event.stopPropagation();deletePlayer('${name}')">✕</button>
-      </div>`;
+  Object.keys(db).forEach(n=>{
+    html+=`<div class="player" onclick="openPlayer('${n}')">${n}</div>`;
   });
 
-  html+=`<div class="card addCard" onclick="newPlayer()">＋</div></div>`;
+  html+=`<div class="player add" onclick="newPlayer()">＋</div></div>`;
   home.innerHTML=html;
 }
 
 function newPlayer(){
-  const name=prompt("Player name?");
-  if(!name) return;
-  db[name]=[];
+  const n=prompt("Name?");
+  if(!n) return;
+  db[n]=[];
   save();
   showHome();
 }
 
-function deletePlayer(name){
-  if(confirm("Delete "+name+"?")){
-    delete db[name];
-    save();
-    showHome();
-  }
-}
-
 /* PROFILE */
 
-function openPlayer(name){
-  current=name;
-  home.style.display="none";
+function openPlayer(n){
+  current=n;
+  hideAll();
   profile.style.display="block";
 
   let html=`
-    <div class="topbar">
-      <button class="secondary" onclick="showHome()">←</button>
+    <div class="card">
+      <h2>${n}</h2>
       <button class="primary" onclick="addRow()">Add Result</button>
       <button class="secondary" onclick="saveProfile()">Save</button>
-      <button class="danger" onclick="clearAll()">Clear</button>
     </div>
 
-    <h2>${name}</h2>
+    <div class="card">
+      <table id="tbl">
+        <tr>
+          <th>Meet</th>
+          <th>100</th><th>200</th><th>400</th>
+          <th>800</th><th>1600</th>
+          <th>LJ</th><th>HJ</th><th>TJ</th>
+        </tr>
+      </table>
+    </div>
 
-    <table id="tbl">
-      <tr>
-        <th>Meet</th>
-        <th>100</th><th>200</th><th>400</th>
-        <th>800</th><th>1600</th>
-        <th>LJ</th><th>HJ</th><th>TJ</th>
-        <th></th>
-      </tr>
-    </table>
-
-    <div id="bests" class="panel"></div>
+    <div class="card" id="bests"></div>
   `;
 
   profile.innerHTML=html;
 
-  db[name].forEach(addRow);
+  db[n].forEach(addRow);
   updatePR();
 }
 
 function addRow(data={}){
-  const tbl=document.getElementById("tbl");
   const r=tbl.insertRow();
 
   const f=["meet","100","200","400","800","1600","lj","hj","tj"];
@@ -248,9 +229,6 @@ function addRow(data={}){
     const c=r.insertCell();
     c.innerHTML=`<input value="${data[x]||""}" oninput="updatePR()">`;
   });
-
-  const del=r.insertCell();
-  del.innerHTML=`<button class="danger" onclick="this.closest('tr').remove();updatePR()">✕</button>`;
 }
 
 function saveProfile(){
@@ -275,18 +253,9 @@ function saveProfile(){
 
   db[current]=data;
   save();
-  alert("Saved");
 }
 
-function clearAll(){
-  if(confirm("Clear results?")){
-    db[current]=[];
-    save();
-    openPlayer(current);
-  }
-}
-
-/* PR SYSTEM */
+/* PR + BESTS */
 
 function updatePR(){
   const rows=document.querySelectorAll("#tbl tr");
@@ -321,12 +290,26 @@ function updatePR(){
     }
   });
 
-  document.getElementById("bests").innerHTML=`
+  bests.innerHTML = `
     <h3>Personal Bests</h3>
-    100: ${best[1]||"-"} | 200: ${best[2]||"-"} | 400: ${best[3]||"-"}<br>
-    800: ${best[4]||"-"} | 1600: ${best[5]||"-"}<br>
-    LJ: ${best[6]||"-"} | HJ: ${best[7]||"-"} | TJ: ${best[8]||"-"}
+    100 ${best[1]||"-"} | 200 ${best[2]||"-"} | 400 ${best[3]||"-"}<br>
+    800 ${best[4]||"-"} | 1600 ${best[5]||"-"}<br>
+    LJ ${best[6]||"-"} | HJ ${best[7]||"-"} | TJ ${best[8]||"-"}
   `;
+}
+
+/* STATS SCREEN */
+
+function showStats(){
+  hideAll();
+  stats.style.display="block";
+  stats.innerHTML=`<div class="card"><h2>Stats coming soon</h2></div>`;
+}
+
+function hideAll(){
+  home.style.display="none";
+  profile.style.display="none";
+  stats.style.display="none";
 }
 
 showHome();
