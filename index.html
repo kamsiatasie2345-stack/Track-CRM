@@ -15,16 +15,84 @@ body{
 }
 
 /* HEADER */
+/* PREMIUM GLASS HEADER */
+
 .header{
-  padding:18px;
-  text-align:center;
-  font-size:24px;
-  font-weight:700;
-  background:#111;
+  position:sticky;
+  top:0;
+  z-index:999;
+  padding:16px 22px;
+
   display:flex;
   align-items:center;
   justify-content:center;
   gap:12px;
+
+  font-size:22px;
+  font-weight:700;
+
+  background:rgba(15,15,15,0.7);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+
+  border-bottom:1px solid rgba(255,255,255,0.08);
+
+  animation:slideDown .6s ease;
+}
+
+.title{
+  letter-spacing:.5px;
+}
+
+/* LOGO CIRCLE */
+
+.logoWrap{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:linear-gradient(135deg,#ffffff,#bdbdbd);
+  box-shadow:
+    0 0 18px rgba(255,255,255,.35),
+    inset 0 0 6px rgba(0,0,0,.5);
+
+  animation:logoPop .7s cubic-bezier(.2,.9,.2,1);
+}
+
+.logoIcon{
+  font-size:20px;
+  color:#000;
+}
+
+/* ANIMATIONS */
+
+@keyframes slideDown{
+  from{
+    opacity:0;
+    transform:translateY(-20px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+@keyframes logoPop{
+  0%{
+    transform:scale(.6) rotate(-10deg);
+    opacity:0;
+  }
+  60%{
+    transform:scale(1.1);
+  }
+  100%{
+    transform:scale(1);
+    opacity:1;
+  }
 }
 
 .logo{
