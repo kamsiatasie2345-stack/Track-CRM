@@ -45,7 +45,7 @@ body{
   position:absolute;
   top:110px;
   width:100%;
-  height:calc(100% - 140px);
+  height:calc(100% - 110px);
   padding:20px;
   overflow-y:auto;
   opacity:0;
@@ -82,12 +82,6 @@ body{
 }
 
 .profile:hover{transform:scale(1.05);}
-
-.profile img{
-  width:50px;
-  margin-bottom:8px;
-  filter:invert(1);
-}
 
 /* DELETE BUTTON */
 .deleteBtn{
@@ -155,24 +149,12 @@ button.primary{
   font-weight:bold;
   font-size:18px;
 }
-
-/* FOOTER */
-.footer{
-  position:fixed;
-  bottom:0;
-  width:100%;
-  text-align:center;
-  padding:10px;
-  font-size:12px;
-  background:#111;
-  letter-spacing:.5px;
-}
 </style>
 </head>
 
 <body>
 
-<div class="header">TrackPro Elite</div>
+<div class="header">🏃 TrackPro Elite</div>
 
 <div class="nav" id="nav" style="display:none;">
   <button onclick="switchTab('stats')">Stats</button>
@@ -218,9 +200,48 @@ button.primary{
   </div>
 </div>
 
-<!-- FOOTER -->
-<div class="footer">
-  © Made by Kamsi Atasie
+<!-- GOALS -->
+<div id="goals" class="page">
+  <button class="backBtn" onclick="goHome()">⬅ Profiles</button>
+
+  <div class="card">
+    <h2>🎯 Goals</h2>
+    <input id="goalInput" placeholder="Goal">
+    <button class="primary" onclick="addGoal()">Add</button>
+    <div id="goalList"></div>
+  </div>
+</div>
+
+<!-- WORKOUT -->
+<div id="workout" class="page">
+  <button class="backBtn" onclick="goHome()">⬅ Profiles</button>
+
+  <div class="card">
+    <h2>🏃 Workout Planner</h2>
+    <textarea id="workoutText" rows="6"></textarea>
+    <button class="primary" onclick="saveWorkout()">Save Workout</button>
+  </div>
+</div>
+
+<!-- TOOLS -->
+<div id="tools" class="page">
+  <button class="backBtn" onclick="goHome()">⬅ Profiles</button>
+
+  <div class="card">
+    <h3>🏁 Race Prediction AI</h3>
+    <input id="predictInput" placeholder="Recent time">
+    <button class="primary" onclick="predict()">Predict</button>
+    <div id="predictionResult"></div>
+  </div>
+
+  <div class="card">
+    <h3>⏱ Split Calculator</h3>
+    <input id="totalTime" placeholder="Total time">
+    <input id="distance" placeholder="Total distance">
+    <input id="segment" placeholder="Segment distance">
+    <button class="primary" onclick="calculateSplit()">Calculate</button>
+    <div id="splitResult"></div>
+  </div>
 </div>
 
 <script>
@@ -241,7 +262,7 @@ function renderProfiles(){
     profileGrid.innerHTML+=`
       <div class="profile" onclick="openAthlete(${i})">
         <button class="deleteBtn" onclick="deleteAthlete(event,${i})">×</button>
-        <img src="runner.png">
+        <div style="font-size:32px">🏃</div>
         <div>${a.name}</div>
       </div>`;
   });
@@ -287,6 +308,36 @@ function goHome(){
   profiles.classList.add("active");
 }
 
+/* TAB SWITCH */
+
+function switchTab(tab){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(tab).classList.add("active");
+
+  if(tab==="stats") showEventChart();
+  if(tab==="goals") renderGoals();
+  if(tab==="workout") workoutText.value=data.athletes[current].workout;
+}
+
+/* RESULTS + PR */
+
+function addResult(){
+  const e=eventSelect.value;
+  const val=parseFloat(resultInput.value);
+  const a=data.athletes[current];
+
+  if(!a.results[e]) a.results[e]=[];
+
+  const best=Math.min(...a.results[e],Infinity);
+  a.results[e].push(val);
+  save();
+
+  prNotice.innerHTML = val < best ? "🔥 NEW PR!" : "";
+  prNotice.className = val < best ? "pr" : "";
+
+  showEventChart();
+}
+
 /* EVENT CHART */
 
 function showEventChart(){
@@ -311,6 +362,40 @@ function showEventChart(){
       animation:{duration:900}
     }
   });
+}
+
+/* GOALS */
+
+function addGoal(){
+  data.athletes[current].goals.push(goalInput.value);
+  save();
+  renderGoals();
+}
+
+function renderGoals(){
+  const g=data.athletes[current].goals;
+  goalList.innerHTML=g.map(x=>`<div>${x}</div>`).join("");
+}
+
+/* WORKOUT */
+
+function saveWorkout(){
+  data.athletes[current].workout=workoutText.value;
+  save();
+}
+
+/* TOOLS */
+
+function predict(){
+  const t=parseFloat(predictInput.value);
+  predictionResult.innerText="Predicted PR: "+(t*0.97).toFixed(2);
+}
+
+function calculateSplit(){
+  const T=+totalTime.value;
+  const D=+distance.value;
+  const S=+segment.value;
+  splitResult.innerText="Split: "+(T/D*S).toFixed(2);
 }
 
 renderProfiles();
